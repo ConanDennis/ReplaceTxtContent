@@ -13,8 +13,8 @@ public class ReplaceContent {
     private static final String articleUrl = "http://qfc.qunar.com/homework/sdxl_template.txt";
     private static final String outputFile = "/Users/kingwufeng/workspace/ReplaceContent/sdxl.txt";
 
-    private static LinkedList<String> indexList = Lists.newLinkedList();
-    private static HashMap<String, String> propertyMap = Maps.newHashMap();
+    private static List<String> sentenceList = Lists.newLinkedList();
+    private static Map<String, String> propertyMap = Maps.newHashMap();
 
     public static void main(String[] args) {
 
@@ -26,17 +26,44 @@ public class ReplaceContent {
 
     }
 
-    private static List<String> readText(String url) throws IOException {
+    private static void replaceText() throws IOException {
+        getProperty();
+        List<String> articleLines = readText(articleUrl);
+        StringBuilder sb = new StringBuilder();
+        int propertyRow = 0;
+        for (String line : articleLines) {
+            line = line.trim();
+            if (line.equals("")) {
+                sb.append("\n");
+                continue;
+            }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setDoInput(true);
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        List<String> propertyLines = Lists.newLinkedList();
-        String s;
-        while ((s = br.readLine()) != null) {
-            propertyLines.add(s);
+            int prev = -1;
+            int last = 0;
+
+            StringBuilder tmpLine = new StringBuilder();
+
+            List<FunctionDesc> functionList = analysisFunctionsInLine(line);
+
+            for (FunctionDesc func : functionList) {
+                tmpLine.append(line.substring(prev + 1, func.start));
+                tmpLine.append(function(func.functionName, func.index, propertyRow++));
+                prev = func.end;
+                last = func.end;
+            }
+            tmpLine.append(line.substring(last + 1));
+            tmpLine.append("\n");
+            sb.append(tmpLine);
         }
-        return propertyLines;
+        String context = sb.toString();
+
+        System.out.println("最终转换过来的文件大小是：" + context.length());
+
+        FileWriter fw = new FileWriter(new File(outputFile));
+        fw.write(context);
+        fw.flush();
+        fw.close();
+
     }
 
     private static void getProperty() throws IOException {
@@ -53,9 +80,22 @@ public class ReplaceContent {
 
             String index = property.next();
             String sentence = property.next();
-            indexList.add(sentence);
+            sentenceList.add(sentence);
             propertyMap.put(index, sentence);
         }
+    }
+
+    private static List<String> readText(String url) throws IOException {
+
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setDoInput(true);
+        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        List<String> propertyLines = Lists.newLinkedList();
+        String line;
+        while ((line = br.readLine()) != null) {
+            propertyLines.add(line);
+        }
+        return propertyLines;
     }
 
     private static List<FunctionDesc> analysisFunctionsInLine(String line) {
@@ -74,68 +114,35 @@ public class ReplaceContent {
         return functionList;
     }
 
-    private static String function(String functionName, String indexName, int i) {
+    public static String function(String functionName, String index, int propertyRow) {
         boolean desc = false;
+
         if (functionName.equals("natureOrder")) {
-            return indexList.get(i);
+            return sentenceList.get(propertyRow);
         } else if (functionName.equals("indexOrder")) {
-            return propertyMap.get(indexName);
+            return propertyMap.get(index);
         } else if (functionName.equals("charOrderDESC")) {
             desc = true;
         }
-        String[] items = indexList.get(i).split("");
+        String[] sentenceChars = sentenceList.get(propertyRow).split("");
         if (desc) {
-            Arrays.sort(items);
+            Arrays.sort(sentenceChars);
         } else {
-
-            Arrays.sort(items, new Comparator<String>() {
+            Arrays.sort(sentenceChars, new Comparator<String>() {
 
                 public int compare(String o1, String o2) {
-                    return -o1.compareTo(o2);
+                    return - o1.compareTo(o2);
                 }
 
             });
         }
-        StringBuilder buffer = new StringBuilder();
-        for (String item : items) {
-            buffer.append(item);
+        StringBuilder charSortedSentence = new StringBuilder();
+        for (String sentenceChar : sentenceChars) {
+            charSortedSentence.append(sentenceChar);
         }
-        return buffer.toString();
+        return charSortedSentence.toString();
     }
 
-    private static void replaceText() throws IOException {
-        getProperty();
-        List<String> articleLines = readText(articleUrl);
-        StringBuilder sb = new StringBuilder();
-        int index = 0;
-        for (String line : articleLines) {
-            line = line.trim();
-            if (line.equals("")) {
-                sb.append("\n");
-                continue;
-            }
-            List<FunctionDesc> items = analysisFunctionsInLine(line);
-            int last = 0;
-            StringBuilder tmpLine = new StringBuilder();
-            int prev = -1;
-            for (FunctionDesc fun : items) {
-                tmpLine.append(line.substring(prev + 1, fun.start));
-                tmpLine.append(function(fun.functionName, fun.index, index++));
-                prev = fun.end;
-                last = fun.end;
-            }
-            tmpLine.append(line.substring(last + 1));
-            tmpLine.append("\n");
-            sb.append(tmpLine);
-        }
-        String context = sb.toString();
-        System.out.println("最终转换过来的文件大小是：" + context.length());
-        FileWriter fw = new FileWriter(new File(outputFile));
-        fw.write(context);
-        fw.flush();
-        fw.close();
-
-    }
 
     static class FunctionDesc {
         int start, end;
@@ -149,9 +156,6 @@ public class ReplaceContent {
             this.index = index;
         }
 
-        public String toString() {
-            return "[start = " + start + ", end = " + end + ", functionName = " + functionName + ", index = " + index + "]";
-        }
     }
 
 }
