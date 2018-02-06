@@ -125,11 +125,12 @@ public class ReplaceContent {
             isDesc = true;
         }
 
-        String[] sentenceChars = sentenceList.get(propertyRow).split("");
+        String sentence = sentenceList.get(propertyRow);
+        String[] characters = sentence.split("");
         if (isDesc) {
-            Arrays.sort(sentenceChars);
+            Arrays.sort(characters);
         } else {
-            Arrays.sort(sentenceChars, new Comparator<String>() {
+            Arrays.sort(characters, new Comparator<String>() {
 
                 public int compare(String o1, String o2) {
                     return - o1.compareTo(o2);
@@ -137,11 +138,11 @@ public class ReplaceContent {
 
             });
         }
-        StringBuilder charSortedSentence = new StringBuilder();
-        for (String sentenceChar : sentenceChars) {
-            charSortedSentence.append(sentenceChar);
+        StringBuilder sortedSentence = new StringBuilder();
+        for (String character : characters) {
+            sortedSentence.append(character);
         }
-        return charSortedSentence.toString();
+        return sortedSentence.toString();
     }
 
 
