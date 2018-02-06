@@ -89,7 +89,9 @@ public class ReplaceContent {
 
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setDoInput(true);
+
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
         List<String> propertyLines = Lists.newLinkedList();
         String line;
         while ((line = br.readLine()) != null) {
