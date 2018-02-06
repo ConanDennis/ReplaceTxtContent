@@ -11,7 +11,7 @@ public class ReplaceContent {
 
     private static final String propertyUrl = "http://qfc.qunar.com/homework/sdxl_prop.txt";
     private static final String articleUrl = "http://qfc.qunar.com/homework/sdxl_template.txt";
-    private static final String outputFile = "/Users/kingwufeng/workspace/ReplaceContent/sdxl.txt";
+    private static final String outputFile = "./sdxl.txt";
 
     private static List<String> sentenceList = Lists.newLinkedList();
     private static Map<String, String> propertyMap = Maps.newHashMap();
@@ -115,17 +115,18 @@ public class ReplaceContent {
     }
 
     public static String function(String functionName, String index, int propertyRow) {
-        boolean desc = false;
+        boolean isDesc = false;
 
         if (functionName.equals("natureOrder")) {
             return sentenceList.get(propertyRow);
         } else if (functionName.equals("indexOrder")) {
             return propertyMap.get(index);
         } else if (functionName.equals("charOrderDESC")) {
-            desc = true;
+            isDesc = true;
         }
+
         String[] sentenceChars = sentenceList.get(propertyRow).split("");
-        if (desc) {
+        if (isDesc) {
             Arrays.sort(sentenceChars);
         } else {
             Arrays.sort(sentenceChars, new Comparator<String>() {
