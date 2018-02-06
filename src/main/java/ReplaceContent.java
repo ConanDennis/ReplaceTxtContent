@@ -59,7 +59,7 @@ public class ReplaceContent {
     }
 
     private static List<FunctionDesc> analysisFunctionsInLine(String line) {
-        List<FunctionDesc> funtionList = Lists.newArrayList();
+        List<FunctionDesc> functionList = Lists.newArrayList();
         int signIndex, prev = -1;
         while ((signIndex = line.indexOf("$", prev + 1)) != -1) {
 
@@ -68,10 +68,10 @@ public class ReplaceContent {
 
             int end = line.indexOf(")", tmpEnd);
             String index = line.substring(tmpEnd + 1, end);
-            funtionList.add(new FunctionDesc(signIndex, end, functionName, index));
+            functionList.add(new FunctionDesc(signIndex, end, functionName, index));
             prev = signIndex;
         }
-        return funtionList;
+        return functionList;
     }
 
     private static String function(String functionName, String indexName, int i) {
